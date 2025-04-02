@@ -1,3 +1,4 @@
+const Users = require('../models/Users');
 const { User } = require('../models/Users');
 const bcrypt = require('bcrypt');
 
@@ -5,18 +6,20 @@ const bcrypt = require('bcrypt');
 const registerUser = async(req,res) =>{
     try{
 
+ 
+        //extracting data from frontend
+        const {username,email, password, role} = req.body;
+
         if(!username || !email || !password){
             return res.status(400).json({
                 messgae: "please enter the given fields"
             })
         }
-        //extracting data from frontend
-        const {username,email, password, role} = req.body;
         
         //check existing user
         const checkexisting = await User.findOne({
-            $or: [{username}, {email}]
-        });
+            $or: [{email} , {username}]
+        })
 
         if(checkexisting){
             return res.status(400).json({
@@ -25,7 +28,7 @@ const registerUser = async(req,res) =>{
         }
 
         //hasing password
-        const hasedPassword = await bcrypt.hash(password,10);
+        const hashedPassword = await bcrypt.hash(password,10);
 
         const newUser = await User.create({
             username,
@@ -43,7 +46,7 @@ const registerUser = async(req,res) =>{
         });
 
     }catch(error){
-       res.status(500).json({
+       return res.status(500).json({
             message: "Error occured"
         })
     }
